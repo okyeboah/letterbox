@@ -1,0 +1,15 @@
+services:
+  letterbox:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "4600:4600"
+      - "2525:2525"
+    # Receive pushes instead of polling; see the webhook section in the README:
+    # environment:
+    #   LETTERBOX_WEBHOOK_URL: http://host.docker.internal:9000/hooks/letterbox
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:4600/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
