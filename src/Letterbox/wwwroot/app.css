@@ -1,0 +1,154 @@
+:root {
+  --bg: #0f1115;
+  --panel: #161a22;
+  --panel-2: #1b202b;
+  --line: #272e3d;
+  --text: #e6e9ef;
+  --dim: #8b93a7;
+  --accent: #4f8cff;
+  --danger: #e5484d;
+  --ok: #7ee787;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+h1 { font-size: 18px; margin: 0; }
+
+nav { display: flex; gap: 4px; }
+
+button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover { border-color: var(--accent); }
+.tab.active, .view-tab.active { border-color: var(--accent); color: var(--accent); }
+button.danger { color: var(--danger); }
+button.danger:hover { border-color: var(--danger); }
+
+.controls { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.controls input[type="search"] {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 220px;
+}
+.toggle { display: flex; align-items: center; gap: 4px; color: var(--dim); font-size: 13px; }
+
+main { flex: 1; display: flex; min-height: 0; }
+
+#list {
+  width: 42%;
+  min-width: 340px;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+}
+
+.row { padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.row:hover { background: var(--panel); }
+.row.selected { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent); }
+.row-top { display: flex; gap: 6px; font-size: 13px; color: var(--dim); overflow: hidden; }
+.from, .to { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arrow { color: var(--line); }
+.row-title { font-size: 14px; margin-top: 2px; }
+.row-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.time { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.row-delete { padding: 0 6px; font-size: 12px; color: var(--dim); border: none; background: none; }
+.row-delete:hover { color: var(--danger); border: none; }
+.preview { font-size: 12px; color: var(--dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#detail { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; min-width: 0; }
+.detail-head h2 { margin: 0 0 6px; font-size: 17px; }
+.meta { font-size: 13px; margin-top: 4px; word-break: break-all; }
+.dim { color: var(--dim); }
+.views { display: flex; gap: 6px; margin-top: 10px; }
+
+#view-pane { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 10px; }
+#view-pane pre {
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+#body-frame { flex: 1; width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+
+#detail pre {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 8px 0 0;
+}
+
+.otp {
+  display: inline-block;
+  background: #12261a;
+  color: var(--ok);
+  border: 1px solid #1f4b2c;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.fields { border-collapse: collapse; margin-top: 10px; width: 100%; }
+.fields th, .fields td {
+  text-align: left;
+  font-size: 13px;
+  padding: 4px 10px 4px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.fields th { color: var(--dim); font-weight: 500; white-space: nowrap; }
+
+.attachment {
+  display: inline-block;
+  margin-right: 10px;
+  color: var(--accent);
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.attachment:hover { border-color: var(--accent); }
+
+.empty { color: var(--dim); font-size: 13px; padding: 24px; text-align: center; }
+
+h3 { font-size: 13px; color: var(--dim); font-weight: 500; margin: 16px 0 0; }
