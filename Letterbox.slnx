@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Letterbox/Letterbox.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Letterbox.Tests/Letterbox.Tests.csproj" />
+  </Folder>
+</Solution>
