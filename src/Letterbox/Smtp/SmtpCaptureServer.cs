@@ -19,7 +19,21 @@ public sealed class SmtpCaptureServer(LetterboxOptions options, CaptureStore sto
     {
         var serverOptions = new SmtpServerOptionsBuilder()
             .ServerName("letterbox")
-            .Endpoint(builder => builder.Endpoint(new IPEndPoint(IPAddress.Parse(options.Bind), options.SmtpPort)))
+            .Endpoint(builder =>
+            {
+                builder.Endpoint(new IPEndPoint(IPAddress.Parse(options.Bind), options.SmtpPort));
+                // With a certificate the server advertises STARTTLS, which SMTP
+                // clients that refuse plaintext (MailKit's StartTls posture)
+                // require before the transaction. A throwaway self-signed pair
+                // is enough: the sink holds no secrets, the certificate only
+                // exists to carry the negotiation. A configured certificate
+                // file keeps the identity stable, which lets clients that
+                // validate against their own trust store pin it once.
+                if (options.SmtpTls)
+                    builder.Certificate(options.SmtpTlsCert is null
+                        ? SelfSignedCertificate()
+                        : new System.Security.Cryptography.X509Certificates.X509Certificate2(options.SmtpTlsCert));
+            })
             .MaxMessageSize(10 * 1024 * 1024, MaxMessageSizeHandling.Strict)
             .Build();
 
@@ -28,6 +42,18 @@ public sealed class SmtpCaptureServer(LetterboxOptions options, CaptureStore sto
         services.Add(new CaptureMessageStore(store, relay));
 
         return new SmtpServer.SmtpServer(serverOptions, services).StartAsync(stoppingToken);
+    }
+
+    static System.Security.Cryptography.X509Certificates.X509Certificate2 SelfSignedCertificate()
+    {
+        using var rsa = System.Security.Cryptography.RSA.Create(2048);
+        var request = new System.Security.Cryptography.X509Certificates.CertificateRequest(
+            "CN=letterbox", rsa, System.Security.Cryptography.HashAlgorithmName.SHA256,
+            System.Security.Cryptography.RSASignaturePadding.Pkcs1);
+        var certificate = request.CreateSelfSigned(
+            DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5));
+        return new System.Security.Cryptography.X509Certificates.X509Certificate2(
+            certificate.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx));
     }
 
     sealed class CaptureMessageStore(CaptureStore store, WebhookRelay relay) : MessageStore

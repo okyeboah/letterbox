@@ -3,7 +3,7 @@ using System.Net;
 namespace Letterbox;
 
 /// <summary>Runtime configuration. Environment variables apply first; command-line arguments override them.</summary>
-public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, int MaxMessages, string? WebhookUrl)
+public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, int MaxMessages, string? WebhookUrl, bool SmtpTls = false, string? SmtpTlsCert = null)
 {
     public static LetterboxOptions Load(string[] args, Func<string, string?> env)
     {
@@ -12,6 +12,8 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
         var bind = BlankToNull(env("LETTERBOX_BIND")) ?? "127.0.0.1";
         var maxMessages = ParseInt(env("LETTERBOX_MAX_MESSAGES"), 500);
         var webhookUrl = BlankToNull(env("LETTERBOX_WEBHOOK_URL"));
+        var smtpTls = ParseBool(env("LETTERBOX_SMTP_TLS"));
+        var smtpTlsCert = BlankToNull(env("LETTERBOX_SMTP_TLS_CERT"));
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -52,6 +54,12 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
                 case "--webhook-url":
                     webhookUrl = BlankToNull(value);
                     break;
+                case "--smtp-tls":
+                    smtpTls = ParseBool(value);
+                    break;
+                case "--smtp-tls-cert":
+                    smtpTlsCert = BlankToNull(value);
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option '{name}'.");
             }
@@ -60,10 +68,13 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
         if (!IPAddress.TryParse(bind, out _))
             throw new ArgumentException($"Bind address '{bind}' is not an IP address. Use for example 127.0.0.1 or 0.0.0.0.");
 
-        return new LetterboxOptions(httpPort, smtpPort, bind, maxMessages, webhookUrl);
+        return new LetterboxOptions(httpPort, smtpPort, bind, maxMessages, webhookUrl, smtpTls, smtpTlsCert);
     }
 
     static string? BlankToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    static bool ParseBool(string? value) =>
+        value is null || value == "" || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value == "1";
 
     static int ParsePort(string? value, int fallback, string source)
     {
