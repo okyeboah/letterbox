@@ -4,3 +4,28 @@ obj/
 .vs/
 .idea/
 .DS_Store
+
+# agent-brain:repo:start
+
+# The stele-context index is run-local state, never shared.
+.stele-context/
+# The repo-local brain is retired; the brain is user-scope at ~/.agent.
+.agent/
+.DS_Store
+
+# Agent adapter stubs this repository does not track. Introducing agent
+# tooling into a repository that carries none is the owner's decision,
+# so the files stay local and are ignored rather than committed.
+.agents/skills/
+.claude/
+.codex/
+.github/hooks/
+.zcode/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+
+# register_guards.py writes one backup per adapter before it merges;
+# it is a recovery copy, not source.
+*.bak-guards
+# agent-brain:repo:end
