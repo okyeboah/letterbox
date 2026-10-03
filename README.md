@@ -29,6 +29,8 @@ Open http://127.0.0.1:4600.
 | `--bind`         | `LETTERBOX_BIND`         | `127.0.0.1` | IP address to bind (the image sets `0.0.0.0`) |
 | `--max-messages` | `LETTERBOX_MAX_MESSAGES` | `500`       | In-memory cap; oldest messages evicted first  |
 | `--webhook-url`  | `LETTERBOX_WEBHOOK_URL`  | off         | Push every capture to this URL                |
+| `--smtp-tls`     | `LETTERBOX_SMTP_TLS`     | off         | Advertise STARTTLS with a self-signed certificate, for SMTP clients that refuse plaintext |
+| `--smtp-tls-cert`| `LETTERBOX_SMTP_TLS_CERT`| generated   | PFX file to serve instead of the generated throwaway, so clients can pin one stable identity |
 
 Environment variables apply first; command-line arguments override them.
 

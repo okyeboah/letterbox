@@ -3,7 +3,7 @@ using System.Net;
 namespace Letterbox;
 
 /// <summary>Runtime configuration. Environment variables apply first; command-line arguments override them.</summary>
-public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, int MaxMessages, string? WebhookUrl)
+public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, int MaxMessages, string? WebhookUrl, bool SmtpTls = false, string? SmtpTlsCert = null)
 {
     public static LetterboxOptions Load(string[] args, Func<string, string?> env)
     {
@@ -12,6 +12,8 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
         var bind = BlankToNull(env("LETTERBOX_BIND")) ?? "127.0.0.1";
         var maxMessages = ParseInt(env("LETTERBOX_MAX_MESSAGES"), 500);
         var webhookUrl = BlankToNull(env("LETTERBOX_WEBHOOK_URL"));
+        var smtpTls = ParseBool(env("LETTERBOX_SMTP_TLS"), false);
+        var smtpTlsCert = BlankToNull(env("LETTERBOX_SMTP_TLS_CERT"));
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -25,6 +27,11 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
             {
                 value = name[(equals + 1)..];
                 name = name[..equals];
+            }
+            else if (name == "--smtp-tls")
+            {
+                // A switch: bare means on; an explicit true/false/1/0 may follow.
+                value = i + 1 < args.Length && IsBool(args[i + 1]) ? args[++i] : "true";
             }
             else if (i + 1 < args.Length)
             {
@@ -52,6 +59,12 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
                 case "--webhook-url":
                     webhookUrl = BlankToNull(value);
                     break;
+                case "--smtp-tls":
+                    smtpTls = ParseBool(value, smtpTls);
+                    break;
+                case "--smtp-tls-cert":
+                    smtpTlsCert = BlankToNull(value);
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option '{name}'.");
             }
@@ -60,10 +73,15 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
         if (!IPAddress.TryParse(bind, out _))
             throw new ArgumentException($"Bind address '{bind}' is not an IP address. Use for example 127.0.0.1 or 0.0.0.0.");
 
-        return new LetterboxOptions(httpPort, smtpPort, bind, maxMessages, webhookUrl);
+        return new LetterboxOptions(httpPort, smtpPort, bind, maxMessages, webhookUrl, smtpTls, smtpTlsCert);
     }
 
     static string? BlankToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    static bool IsBool(string value) => value is "1" or "0" || bool.TryParse(value, out _);
+
+    static bool ParseBool(string? value, bool fallback) =>
+        value is "1" ? true : value is "0" ? false : bool.TryParse(value, out var parsed) ? parsed : fallback;
 
     static int ParsePort(string? value, int fallback, string source)
     {
