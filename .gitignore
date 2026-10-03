@@ -4,3 +4,6 @@ obj/
 .vs/
 .idea/
 .DS_Store
+
+# Machine-local .mcp.json backups left by the stele-rs cutover.
+.mcp.json.bak*

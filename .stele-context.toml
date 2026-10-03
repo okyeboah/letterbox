@@ -1,0 +1,2 @@
+# Keep vendored/build/generated output out of the code index (found by agent-brain tools/token_audit.py).
+skip_dirs = ["bin", "obj"]
