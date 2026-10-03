@@ -12,7 +12,7 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
         var bind = BlankToNull(env("LETTERBOX_BIND")) ?? "127.0.0.1";
         var maxMessages = ParseInt(env("LETTERBOX_MAX_MESSAGES"), 500);
         var webhookUrl = BlankToNull(env("LETTERBOX_WEBHOOK_URL"));
-        var smtpTls = ParseBool(env("LETTERBOX_SMTP_TLS"));
+        var smtpTls = ParseBool(env("LETTERBOX_SMTP_TLS"), false);
         var smtpTlsCert = BlankToNull(env("LETTERBOX_SMTP_TLS_CERT"));
 
         for (var i = 0; i < args.Length; i++)
@@ -27,6 +27,11 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
             {
                 value = name[(equals + 1)..];
                 name = name[..equals];
+            }
+            else if (name == "--smtp-tls")
+            {
+                // A switch: bare means on; an explicit true/false/1/0 may follow.
+                value = i + 1 < args.Length && IsBool(args[i + 1]) ? args[++i] : "true";
             }
             else if (i + 1 < args.Length)
             {
@@ -55,7 +60,7 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
                     webhookUrl = BlankToNull(value);
                     break;
                 case "--smtp-tls":
-                    smtpTls = ParseBool(value);
+                    smtpTls = ParseBool(value, smtpTls);
                     break;
                 case "--smtp-tls-cert":
                     smtpTlsCert = BlankToNull(value);
@@ -73,8 +78,10 @@ public sealed record LetterboxOptions(int HttpPort, int SmtpPort, string Bind, i
 
     static string? BlankToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
-    static bool ParseBool(string? value) =>
-        value is null || value == "" || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value == "1";
+    static bool IsBool(string value) => value is "1" or "0" || bool.TryParse(value, out _);
+
+    static bool ParseBool(string? value, bool fallback) =>
+        value is "1" ? true : value is "0" ? false : bool.TryParse(value, out var parsed) ? parsed : fallback;
 
     static int ParsePort(string? value, int fallback, string source)
     {

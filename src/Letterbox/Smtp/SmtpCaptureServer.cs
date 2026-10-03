@@ -32,7 +32,7 @@ public sealed class SmtpCaptureServer(LetterboxOptions options, CaptureStore sto
                 if (options.SmtpTls)
                     builder.Certificate(options.SmtpTlsCert is null
                         ? SelfSignedCertificate()
-                        : new System.Security.Cryptography.X509Certificates.X509Certificate2(options.SmtpTlsCert));
+                        : System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadPkcs12FromFile(options.SmtpTlsCert, null));
             })
             .MaxMessageSize(10 * 1024 * 1024, MaxMessageSizeHandling.Strict)
             .Build();
@@ -52,8 +52,8 @@ public sealed class SmtpCaptureServer(LetterboxOptions options, CaptureStore sto
             System.Security.Cryptography.RSASignaturePadding.Pkcs1);
         var certificate = request.CreateSelfSigned(
             DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5));
-        return new System.Security.Cryptography.X509Certificates.X509Certificate2(
-            certificate.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx));
+        return System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadPkcs12(
+            certificate.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx), null);
     }
 
     sealed class CaptureMessageStore(CaptureStore store, WebhookRelay relay) : MessageStore

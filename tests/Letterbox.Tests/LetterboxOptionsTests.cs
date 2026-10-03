@@ -49,4 +49,36 @@ public class LetterboxOptionsTests
     [InlineData("positional")]
     public void RejectsBadInput(params string[] args) =>
         Assert.ThrowsAny<ArgumentException>(() => LetterboxOptions.Load(args, _ => null));
+
+    [Fact]
+    public void SmtpTlsIsOffUnlessAsked()
+    {
+        var options = LetterboxOptions.Load([], _ => null);
+        Assert.False(options.SmtpTls);
+        Assert.Null(options.SmtpTlsCert);
+    }
+
+    [Theory]
+    [InlineData(new[] { "--smtp-tls" }, true)]
+    [InlineData(new[] { "--smtp-tls", "false" }, false)]
+    [InlineData(new[] { "--smtp-tls=0" }, false)]
+    [InlineData(new[] { "--smtp-tls", "--smtp-port", "2555" }, true)]
+    public void SmtpTlsWorksAsASwitch(string[] args, bool expected)
+    {
+        Assert.Equal(expected, LetterboxOptions.Load(args, _ => null).SmtpTls);
+    }
+
+    [Fact]
+    public void SmtpTlsReadsTheEnvironment()
+    {
+        var options = LetterboxOptions.Load([], name => name switch
+        {
+            "LETTERBOX_SMTP_TLS" => "true",
+            "LETTERBOX_SMTP_TLS_CERT" => "/certs/letterbox.pfx",
+            _ => null,
+        });
+        Assert.True(options.SmtpTls);
+        Assert.Equal("/certs/letterbox.pfx", options.SmtpTlsCert);
+        Assert.False(LetterboxOptions.Load(["--smtp-tls=false"], _ => "1").SmtpTls);
+    }
 }
