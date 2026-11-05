@@ -14,6 +14,9 @@ public sealed class CaptureAttachment
 
     public required string ContentType { get; init; }
 
+    /// <summary>The MIME Content-ID an HTML part addresses as <c>cid:</c>, or null.</summary>
+    public string? ContentId { get; init; }
+
     public required long Size { get; init; }
 
     public required byte[] Bytes { get; init; }

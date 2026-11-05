@@ -96,8 +96,26 @@ function renderEmailDetail() {
   renderEmailView();
 }
 
-async function renderEmailView() {
-  const pane = document.getElementById('view-pane');
+/**
+ * Rewrites every `cid:` source to the URL of the captured part it names, so the rendered view
+ * shows the inline images a mail client would show. The frame is sandboxed with an opaque origin,
+ * so each URL must be absolute.
+ */
+function resolveInlineImages(html, messageId, attachments) {
+  const byCid = new Map(
+    (attachments || [])
+      .filter((a) => a.contentId)
+      .map((a) => [a.contentId, a.id]),
+  );
+  return html.replace(/cid:([^"'\s)]+)/gi, (match, cid) => {
+    const id = byCid.get(cid) ?? byCid.get(decodeURIComponent(cid));
+    return id === undefined
+      ? match
+      : `${window.location.origin}/api/messages/${messageId}/attachments/${id}`;
+  });
+}
+
+async function renderEmailView() {  const pane = document.getElementById('view-pane');
   const d = state.detail;
   if (state.view === 'rendered') {
     if (!d.htmlBody) {
@@ -105,7 +123,7 @@ async function renderEmailView() {
       return;
     }
     pane.innerHTML = '<iframe id="body-frame" sandbox=""></iframe>';
-    document.getElementById('body-frame').srcdoc = d.htmlBody;
+    document.getElementById('body-frame').srcdoc = resolveInlineImages(d.htmlBody, d.id, d.attachments);
   } else if (state.view === 'plain') {
     pane.innerHTML = `<pre>${escapeHtml(d.plainBody || '(no plain body)')}</pre>`;
   } else {
