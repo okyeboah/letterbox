@@ -111,6 +111,7 @@ public sealed class SmtpCaptureServer(LetterboxOptions options, CaptureStore sto
                     Id = attachments.Count.ToString(CultureInfo.InvariantCulture),
                     FileName = mimePart.FileName,
                     ContentType = mimePart.ContentType.MimeType,
+                    ContentId = mimePart.ContentId,
                     Size = memory.Length,
                     Bytes = memory.ToArray(),
                 });
