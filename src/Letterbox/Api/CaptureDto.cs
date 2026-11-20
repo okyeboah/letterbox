@@ -49,6 +49,7 @@ public static partial class CaptureDto
             id = attachment.Id,
             fileName = attachment.FileName,
             contentType = attachment.ContentType,
+            contentId = attachment.ContentId,
             size = attachment.Size,
         }),
     };
